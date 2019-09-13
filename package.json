@@ -1,0 +1,11 @@
+{
+  "name": "ogar-pro",
+  "version": "0.0.1",
+  "description": "A QQGroup Admin Robot Plug-in Of CoolQ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo 'test'"
+  },
+  "author": "hhui64",
+  "license": "MIT"
+}
