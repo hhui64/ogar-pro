@@ -4,8 +4,30 @@
   "description": "A QQGroup Admin Robot Plug-in Of CoolQ",
   "main": "index.js",
   "scripts": {
-    "test": "echo 'test'"
+    "dev": "cross-env NODE_ENV=development nodemon --exec 'npx babel-node' src/index.js --watch src",
+    "dev-es6": "cross-env NODE_ENV=development nodemon --exec 'node --experimental-modules' src/index.js --watch src",
+    "test": "ava",
+    "build": "npx babel src -d dist",
+    "start": "cross-env NODE_ENV=production node dist/index.js"
   },
   "author": "hhui64",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@babel/polyfill": "^7.6.0",
+    "consola": "^2.10.1",
+    "cq-websocket": "^2.0.2",
+    "cross-env": "^5.2.1",
+    "crypto-js": "^3.1.9-1",
+    "moment": "<=2.9.0",
+    "mysql": "^2.17.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.6.0",
+    "@babel/core": "^7.6.0",
+    "@babel/node": "^7.6.1",
+    "@babel/preset-env": "^7.6.0",
+    "eslint": "^6.3.0",
+    "ava": "^2.3.0",
+    "nodemon": "^1.19.2"
+  }
 }

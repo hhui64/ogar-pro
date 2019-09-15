@@ -1,0 +1,51 @@
+{
+  "db": {
+    "options": {
+      "host": "localhost",
+      "port": 3306,
+      "user": "root",
+      "password": "Asd123456@",
+      "database": "ogar",
+      "connectionLimit": 100
+    },
+    "meta": {
+      "table_prefix": ""
+    }
+  },
+  "client": {
+    "host": "192.168.1.244",
+    "port": 6700,
+    "baseUrl": "",
+    "enableAPI": true,
+    "qq": "3516003614",
+    "accessToken": ""
+  },
+  "baidu_aip": {
+    "APP_ID": "16920821",
+    "API_KEY": "mvpn7EQlfWAH5VhGeK6gNZL3",
+    "SECRET_KEY": "IRsYbVBlpUoDm2v7eTiCcF1KKm3ifcmf"
+  },
+  "rules": {
+    "continuityImage": {
+      "name": "连续发图",
+      "count": 3
+    },
+    "tooLongMsg": {
+      "name": "长消息刷屏",
+      "lineMinimumLength": 4,
+      "count": 8
+    }
+  },
+  "card": {
+    "maximumCards": 5,
+    "effectiveTime": 4320,
+    "maximumMuteTime": 1440,
+    "cardStage": {
+      "1": 10,
+      "2": 30,
+      "3": 60,
+      "4": 180,
+      "5": 360
+    }
+  }
+}
