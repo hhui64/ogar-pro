@@ -1,11 +1,20 @@
-import { CQWebSocket } from 'cq-websocket'
-import { common } from "./common/manager"
+import {
+  CQWebSocket
+} from 'cq-websocket'
+import {
+  common
+} from "./common/manager"
 import config from '../configs/config.json'
-import { handler } from './message/handler'
+import {
+  eventHandler as EventHandler
+} from './event/handler'
+import Axios from 'axios'
+import { liveWatch as LiveWatch } from './live/watch'
 
 (async function () {
   const bot = new CQWebSocket(config.client)
-  const messageHandler = new handler
+  const eventHandler = new EventHandler(bot)
+  // new LiveWatch(bot).init()
   bot.connect()
     .on('socket.error', console.error)
     .on('socket.connecting', (wsType) => console.log('[%s] 建立连接, 请稍后...', wsType))
@@ -15,7 +24,13 @@ import { handler } from './message/handler'
     .on('socket.close', (wsType, code, desc) => console.log('[%s] 连接关闭(%d: %s)', wsType, code, desc))
     .on('ready', () => console.log('今天又是复读复读的一天 ｡:.ﾟヽ(*´∀`)ﾉﾟ.:｡'))
     .on('message', (event, context, tags) => {
-      messageHandler.onMessage(event, context, tags, bot)
+      eventHandler.onMessage(event, context, tags)
       event.stopPropagation()
+    })
+    .on('notice', (context) => {
+      eventHandler.onNotice(context)
+    })
+    .on('request', (context) => {
+      eventHandler.onRequest(context)
     })
 })()
