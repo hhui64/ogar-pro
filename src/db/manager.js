@@ -96,18 +96,22 @@ export default class db extends common {
   }
   /**
    * 生成单键多值匹配查询语句 OR
-   * @param {String} key 键
-   * @param {Array} value 值数组
+   * @param {String} table - 表名
+   * @param {String} key - 键名
+   * @param {Array[]} value - 值数组
+   * @returns {String} 拼接后的 SQL 语句
    */
-  sqlOr(key, value) {
+  sqlOr(table, key, value) {
     if (!value) return null
-    return format("`%s` = '" + value.split(',').join("' OR " + format(`%s`, key) + " = '") + "'", key)
+    let sql = format("SELECT * FROM `%s` WHERE ", table)
+    return format(sql + "`%s` = '" + value.split(',').join("' OR " + format(`%s`, key) + " = '") + "'", key)
   }
   /**
    * 生成 UNION 查询语句
-   * @param {*} table 表
-   * @param {*} key 键
-   * @param {Array} value 值数组
+   * @param {String} table - 表
+   * @param {String} key - 键
+   * @param {Array[]} value - 值数组
+   * @returns {String} 拼接后的 SQL 语句
    */
   sqlUnion(table, key, value) {
     if (!value) return null
