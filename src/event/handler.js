@@ -1,3 +1,9 @@
+/**
+ * 事件监听器主模块
+ * @author hhui64 <907322015@qq.com>
+ */
+
+import moment from 'moment'
 import {
   common
 } from '../common/manager'
@@ -16,6 +22,8 @@ const encrypt = new Encrypt
 class eventHandler extends common {
   constructor(bot) {
     super()
+    this.middleware = []
+    this.middlewareIndex = 0
     this.bot = bot
     this.method = new method(bot)
     this.msgQueue = {
@@ -23,8 +31,27 @@ class eventHandler extends common {
       discuss: [],
       group: {}
     }
+    this.requestMuteQueue = []
     this.AT_QQ_CQ_TAG_REG_EXP = new RegExp(/\[CQ:at,qq=([1-9]\d{5,10})\]\s?/g)
     this.QQ_REG_EXP = new RegExp(/[1-9]\d{5,10}/g)
+  }
+  /**
+   * 添加中间件
+   * @param {Function} fn - 回调函数
+   */
+  use(fn) {
+    if (typeof fn !== 'function') throw new TypeError('中间件必须是函数！')
+    this.middleware.push(fn)
+    return this
+  }
+  /**
+   * 跳转执行下一中间件
+   */
+  next() {
+    if (this.middlewareIndex >= this.middleware) return
+    let middleware = this.middleware[this.middlewareIndex++]
+    if (!middleware) return
+    middleware(this.bot, this.next.bind(this))
   }
   /**
    * 消息事件
@@ -33,6 +60,8 @@ class eventHandler extends common {
    * @param {CQTag[]} tags 
    */
   async onMessage(event, context, tags) {
+    this.middlewareIndex = 0
+    this.next()
     switch (context.message_type) {
       case 'private':
         // this.msgQueue.private.indexOf()
@@ -58,6 +87,150 @@ class eventHandler extends common {
               group_id: context.group_id,
               message: new CQAt(context.sender.user_id) + ' ' + (liveState ? '勤奋的奶铃正在直播！点击进入直播间：https://cc.163.com/348449290/' : '当前没有检测到开播，奶铃正在偷懒中……')
             })
+            return
+          }
+          /**
+           * 回复任意内容取消请求
+           */
+          let gruopRequest = this.requestMuteQueue[context.group_id]
+          if (gruopRequest) {
+            let __requestIndex = this.requestMuteQueue[context.group_id].findIndex(item => item.user_id === context.sender.user_id)
+            if (__requestIndex >= 0) {
+              console.log('已取消申请禁言：', gruopRequest[__requestIndex].user_id, gruopRequest[__requestIndex].time)
+              this.bot('send_msg', {
+                group_id: context.group_id,
+                message: new CQAt(context.sender.user_id) + ' ' + `\n你已取消你在\n【${moment(gruopRequest[__requestIndex]._t, 'X').format('YYYY-MM-DD HH:mm:ss')}】\n提交的禁言申请！`
+              })
+              this.requestMuteQueue[context.group_id].splice(__requestIndex, 1)
+              return
+            } else {
+              // 请求队列中没有当前用户的申请禁言请求
+              return
+            }
+          }
+          /**
+           * 确认申请禁言
+           */
+          if (context.message.indexOf('确认申请') !== -1) {
+            let gruopRequest = this.requestMuteQueue[context.group_id] // 获取该群的申请队列
+            if (!gruopRequest) return // 队列为空则返回, 即暂时无人申请禁言
+            let __request = gruopRequest.find(item => item.user_id === context.sender.user_id)
+            if (__request) { // 判断该群的申请队列中是否存在该用户的申请禁言
+              console.log('确认申请禁言成功：', __request.user_id, __request.time)
+              // 从队列中删除该用户的申请, 此时已判断为逻辑正确
+              this.requestMuteQueue[context.group_id].splice(gruopRequest.findIndex(item => item.user_id === context.sender.user_id), 1)
+              /**
+               * 调用禁言接口
+               */
+              this.bot('set_group_ban', {
+                group_id: context.group_id,
+                user_id: __request.user_id,
+                duration: __request.time
+              })
+              /**
+               * 发送消息
+               */
+              this.bot('send_msg', {
+                group_id: context.group_id,
+                message: new CQAt(context.sender.user_id) + ' ' + `\n确认申请禁言成功！\n---------------------------\n申请时间：\n${moment(__request._t, 'X').format('YYYY-MM-DD HH:mm:ss')}\n---------------------------\n执行时间：\n${moment().format('YYYY-MM-DD HH:mm:ss')}\n---------------------------\n到期时间：\n${moment().add(__request.c, __request.u).format('YYYY-MM-DD HH:mm:ss')}`
+              })
+            } else {
+              // ... 无请求
+            }
+            return
+          }
+          /**
+           * 申请禁言指令, 支持指定单位
+           */
+          if (context.message.indexOf('申请禁言') !== -1) {
+            // let __request = this.requestMuteQueue[context.group_id].find(item => item.user_id === context.sender.user_id)
+            // if (__request) return // 此用户存在未处理的申请
+            /**
+             * 获取申请者信息
+             */
+            const userInfo = await this.bot('get_group_member_info', {
+              group_id: context.group_id,
+              user_id: context.sender.user_id
+            })
+            const isAdmin = userInfo.data.role !== 'member'
+            if (isAdmin) { // 判断是否群主或管理员
+              this.bot('send_msg', {
+                group_id: context.group_id,
+                message: new CQAt(context.sender.user_id) + ' ' + `不支持群主或管理员申请禁言！`
+              })
+              return
+            }
+            /**
+             * 分析时间语法
+             */
+            const _regExpTime = new RegExp(/[\d]+[天|小时|分钟]+/g),
+              _regExpNumber = new RegExp(/[\d]+/ig), // 数字
+              _regExpChar = new RegExp(/[\u4e00-\u9fa5]+/g) // 汉字
+            const _timeStr = _regExpTime.exec(context.message) // 正则过滤的时间字符串
+            if (!_timeStr) { // 时间格式错误
+              this.bot('send_msg', {
+                group_id: context.group_id,
+                message: new CQAt(context.sender.user_id) + ' ' + `\n请输入正确的格式！\n如：'@OGAR 申请禁言1小时'\n单位为：天、小时、分钟`
+              })
+              // return
+            } else {
+              let __c = _regExpNumber.exec(_timeStr[0])[0], // 时间数字
+                __u = _regExpChar.exec(_timeStr[0])[0] // 单位汉字
+              let time = {
+                count: Number(__c),
+                unit: ([{
+                  n: '天',
+                  u: 'd'
+                }, {
+                  n: '小时',
+                  u: 'h'
+                }, {
+                  n: '分钟',
+                  u: 'm'
+                }].find(item => item.n === __u).u) // 映射英文单位标识符
+              }
+              let __sec = moment.duration(Number(time.count), time.unit).asSeconds() // 获取时间秒数
+              /**
+               * 判断申请时间是否非法, 即大于30天或小于等于0
+               */
+              if (__sec <= 0 || !__sec) { // 小于等于0
+                this.bot('send_msg', {
+                  group_id: context.group_id,
+                  message: new CQAt(context.sender.user_id) + ' ' + `\n申请禁言时间不正确！\n---------------------------\n最少时间：\n1分钟`
+                })
+                return
+              }
+              if (__sec > 2591999) { // 时间过大
+                // 置最长时间处理
+                __sec = 2591999
+                time.count = 30
+                time.unit = '天'
+              }
+              /**
+               * 申请禁言的请求体, 用于放入队列中等待申请者的确认
+               */
+              const __request = {
+                title: '申请禁言',
+                group_id: context.sender.user_id,
+                user_id: context.sender.user_id,
+                time: __sec,
+                _t: moment().unix(),
+                c: time.count,
+                u: time.unit
+              }
+              /**
+               * 向申请者回复消息
+               */
+              this.bot('send_msg', {
+                group_id: context.group_id,
+                message: new CQAt(context.sender.user_id) + ' ' + `\n你确定要申请禁言【${time.count + time.unit}】吗？\n执行成功后在到期之前将无法以任何理由申请解除禁言！\n---------------------------\n确认申请：\n回复 '@OGAR 确认申请'\n---------------------------\n取消申请：\n回复 '@OGAR [任意内容]'`
+              })
+              console.log('提交申请禁言：', context.sender.user_id, __sec)
+              /**
+               * 将请求体 push 至请求队列
+               */
+              this.requestMuteQueue[context.group_id] ? this.requestMuteQueue[context.group_id].push(__request) : this.requestMuteQueue[context.group_id] = [__request]
+            }
             return
           }
           /**
