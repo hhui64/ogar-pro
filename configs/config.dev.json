@@ -4,8 +4,8 @@
       "host": "localhost",
       "port": 3306,
       "user": "root",
-      "password": "root",
-      "database": "",
+      "password": "Asd123456@",
+      "database": "ogar",
       "connectionLimit": 100
     },
     "meta": {
@@ -13,11 +13,11 @@
     }
   },
   "client": {
-    "host": "127.0.0.1",
-    "port": 6700,
+    "host": "192.168.1.244",
+    "port": 6701,
     "baseUrl": "",
     "enableAPI": true,
-    "qq": "3516003614",
+    "qq": "1458439467",
     "accessToken": ""
   },
   "baidu_aip": {
