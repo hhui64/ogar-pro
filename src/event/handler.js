@@ -90,26 +90,8 @@ class eventHandler extends common {
             return
           }
           /**
-           * 回复任意内容取消请求
-           */
-          let gruopRequest = this.requestMuteQueue[context.group_id]
-          if (gruopRequest) {
-            let __requestIndex = this.requestMuteQueue[context.group_id].findIndex(item => item.user_id === context.sender.user_id)
-            if (__requestIndex >= 0) {
-              console.log('已取消申请禁言：', gruopRequest[__requestIndex].user_id, gruopRequest[__requestIndex].time)
-              this.bot('send_msg', {
-                group_id: context.group_id,
-                message: new CQAt(context.sender.user_id) + ' ' + `\n你已取消你在\n【${moment(gruopRequest[__requestIndex]._t, 'X').format('YYYY-MM-DD HH:mm:ss')}】\n提交的禁言申请！`
-              })
-              this.requestMuteQueue[context.group_id].splice(__requestIndex, 1)
-              return
-            } else {
-              // 请求队列中没有当前用户的申请禁言请求
-              return
-            }
-          }
-          /**
-           * 确认申请禁言
+           * 确认申请禁言方法
+           * 这一步一定要在取消申请判断之前处理
            */
           if (context.message.indexOf('确认申请') !== -1) {
             let gruopRequest = this.requestMuteQueue[context.group_id] // 获取该群的申请队列
@@ -138,6 +120,25 @@ class eventHandler extends common {
               // ... 无请求
             }
             return
+          }
+          /**
+           * 回复任意内容取消请求
+           */
+          let gruopRequest = this.requestMuteQueue[context.group_id]
+          if (gruopRequest) {
+            let __requestIndex = this.requestMuteQueue[context.group_id].findIndex(item => item.user_id === context.sender.user_id)
+            if (__requestIndex >= 0) {
+              console.log('已取消申请禁言：', gruopRequest[__requestIndex].user_id, gruopRequest[__requestIndex].time)
+              this.bot('send_msg', {
+                group_id: context.group_id,
+                message: new CQAt(context.sender.user_id) + ' ' + `\n你已取消你在\n【${moment(gruopRequest[__requestIndex]._t, 'X').format('YYYY-MM-DD HH:mm:ss')}】\n提交的禁言申请！`
+              })
+              this.requestMuteQueue[context.group_id].splice(__requestIndex, 1)
+              return
+            } else {
+              // 请求队列中没有当前用户的申请禁言请求
+              return
+            }
           }
           /**
            * 申请禁言指令, 支持指定单位
@@ -204,7 +205,8 @@ class eventHandler extends common {
                 // 置最长时间处理
                 __sec = 2591999
                 time.count = 30
-                time.unit = '天'
+                time.unit = 'd'
+                __u = '天'
               }
               /**
                * 申请禁言的请求体, 用于放入队列中等待申请者的确认
@@ -223,7 +225,7 @@ class eventHandler extends common {
                */
               this.bot('send_msg', {
                 group_id: context.group_id,
-                message: new CQAt(context.sender.user_id) + ' ' + `\n你确定要申请禁言【${time.count + time.unit}】吗？\n执行成功后在到期之前将无法以任何理由申请解除禁言！\n---------------------------\n确认申请：\n回复 '@OGAR 确认申请'\n---------------------------\n取消申请：\n回复 '@OGAR [任意内容]'`
+                message: new CQAt(context.sender.user_id) + ' ' + `\n你确定要申请禁言【${time.count + __u}】吗？\n执行成功后在到期之前将无法以任何理由申请解除禁言！\n---------------------------\n确认申请：\n回复 '@OGAR 确认申请'\n---------------------------\n取消申请：\n回复 '@OGAR [任意内容]'`
               })
               console.log('提交申请禁言：', context.sender.user_id, __sec)
               /**
