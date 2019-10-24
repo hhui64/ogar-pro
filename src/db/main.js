@@ -6,7 +6,7 @@
 
 import mysql from 'mysql'
 import moment from 'moment'
-import { common } from '../common/manager'
+import { common } from '../common/main'
 import {
   format
 } from 'util'

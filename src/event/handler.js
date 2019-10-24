@@ -6,10 +6,10 @@
 import moment from 'moment'
 import {
   common
-} from '../common/manager'
+} from '../common/main'
 import {
   encrypt as Encrypt
-} from '../api/manager'
+} from '../api/main'
 import {
   liveWatch as LiveWatch
 } from '../live/watch'
@@ -287,21 +287,16 @@ class eventHandler extends common {
    * @param {Object} context 
    */
   groupAddRequest(context) {
-    const groupQuestionOptions = [{
-      group_id: 179955261,
-      answer: ['奶铃', '奶玲', '奶皮玲', '🥛🔔', '灵儿', '玲玲', '玲儿', '灵灵', '仓鼠', '天猫精灵', '690'],
-      rejectMessage: '回答不正确，已拒绝加群！'
-    }]
-    const thisGroupQuestionOptions = groupQuestionOptions[groupQuestionOptions.findIndex(item => item.group_id === context.group_id)]
-    if (!thisGroupQuestionOptions) return // 没有在 groupQuestionOptions 中的群号则跳过不处理
+    const thisGroupAutoApproveOptions = this.config.groupRules[context.group_id] ? this.config.groupRules[context.group_id].autoApprove : null
+    if (!thisGroupAutoApproveOptions) return // 没有在 groupQuestionOptions 中的群号则跳过不处理
     const requestContent = context.comment.split('\n').map(item => item.substr(3, item.length)), // 分割问题和答案内容
-      matching = thisGroupQuestionOptions.answer.filter(item => requestContent[1].indexOf(item) !== 0), // 判断回答中是否包含关键词
-      isBingoAnswer = matching.length > 0
+      matching = thisGroupAutoApproveOptions.keywords.filter(item => requestContent[1].indexOf(item) !== 0), // 判断回答中是否包含关键词
+      isHasKeywords = matching.length > 0
     this.bot('set_group_add_request', {
       flag: context.flag,
       sub_type: 'add',
-      approve: isBingoAnswer,
-      reason: !isBingoAnswer ? thisGroupQuestionOptions.rejectMessage : ''
+      approve: isHasKeywords,
+      reason: !isHasKeywords ? thisGroupAutoApproveOptions.rejectMessage : ''
     })
   }
   /**

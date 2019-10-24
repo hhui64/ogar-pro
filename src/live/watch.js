@@ -1,9 +1,9 @@
 import {
   common
-} from '../common/manager'
+} from '../common/main'
 import {
   encrypt as Encrypt
-} from '../api/manager'
+} from '../api/main'
 import {
   CQAt
 } from 'cq-websocket'

@@ -3,11 +3,11 @@ import {
 } from 'cq-websocket'
 import {
   common
-} from "./common/manager"
+} from "./common/main"
 import {
   eventHandler as EventHandler
 } from './event/handler'
-import db from './db/manager'
+import db from './db/main'
 
 class main extends common {
   constructor() {

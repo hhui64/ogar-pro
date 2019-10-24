@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import * as CryptoJS from 'crypto-js'
-import { common } from '../common/manager'
+import { common } from '../common/main'
 import {
   format
 } from 'util'

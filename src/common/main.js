@@ -1,6 +1,6 @@
 import consola from 'consola'
-import configDev from '../../configs/config.dev.json'
-import config from '../../configs/config.json'
+import configDev from '../../configs/config.dev'
+import config from '../../configs/config'
 
 class common {
   constructor() {
