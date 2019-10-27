@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   db: {
     options: {
       host: 'localhost',
@@ -49,5 +49,18 @@ module.exports = {
         rejectMessage: '回答不正确，已拒绝加群'
       }
     }
+  },
+  middleware: [
+    'msgQueueManager',
+    'muteRequestQueueManager',
+    'autoReply'
+  ],
+  muteRequestQueueManager: {
+    enable: true,
+    type: ['group']
+  },
+  autoReply: {
+    enable: true,
+    type: ['discuss', 'group']
   }
 }
