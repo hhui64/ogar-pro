@@ -1,4 +1,3 @@
-import consola from 'consola'
 import configDev from '../../configs/config.dev.js'
 import config from '../../configs/config.js'
 
@@ -23,7 +22,6 @@ export default class Common {
     Array.prototype.remove = function (value) {
       return this.splice(this.indexOf(value), 1)
     }
-    // Object.assign(console, consola)
   }
   init() {
     // console.info('hello this is common class')

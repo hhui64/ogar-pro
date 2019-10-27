@@ -1,11 +1,11 @@
-export default {
+module.exports = {
   db: {
     options: {
       host: 'localhost',
       port: 3306,
       user: 'root',
       password: 'root',
-      database: '',
+      database: 'ogar',
       connectionLimit: 100
     },
     meta: {
