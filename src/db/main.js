@@ -6,7 +6,7 @@
 
 import mysql from 'mysql'
 import moment from 'moment'
-import { common } from '../common/main'
+import Common from '../common/main'
 import {
   format
 } from 'util'
@@ -16,7 +16,7 @@ var pool = null
 /**
  * 数据库类
  */
-export default class db extends common {
+export default class db extends Common {
   constructor(options) {
     super()
     this.options = this.config.db.options
@@ -38,7 +38,7 @@ export default class db extends common {
       console.info('Connecting to database and creating connect pool...')
       try {
         pool = mysql.createPool(_OPTIONS)
-        pool ? console.success('MySQL is connected') : console.error('MySQL is connecting failed')
+        pool ? console.log('MySQL is connected') : console.error('MySQL is connecting failed')
       } catch (e) {
         console.error(e)
       }

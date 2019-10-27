@@ -1,6 +1,4 @@
-import {
-  common
-} from '../common/main'
+import Common from '../common/main.js'
 import {
   encrypt as Encrypt
 } from '../api/main'
@@ -11,7 +9,7 @@ import Axios from 'axios'
 
 var timer = null
 
-class liveWatch extends common {
+class liveWatch extends Common {
   constructor(bot) {
     super()
     this.bot = bot
