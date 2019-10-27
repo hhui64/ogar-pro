@@ -7,7 +7,6 @@ import CQApi from '../CQApi/main'
 const autoReply = (options) => {
   MiddlewareManager.use((ctx, next, ...args) => {
     if (!ctx.atMe) return
-    console.log(ctx)
     const bot = args[0]
     bot('send_msg', {
       group_id: ctx.group_id,
