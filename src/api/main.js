@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import * as CryptoJS from 'crypto-js'
-import { common } from '../common/manager'
+import Common from '../common/main'
 import {
   format
 } from 'util'
@@ -8,7 +8,7 @@ import {
 /**
  * 加密算法类
  */
-class encrypt extends common {
+class encrypt extends Common {
   constructor() {
     super()
   }
@@ -125,7 +125,7 @@ class encrypt extends common {
 /**
  * 参数检查与转换类
  */
-class check extends common {
+class check extends Common {
   constructor() {
     super()
   }

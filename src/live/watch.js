@@ -1,9 +1,7 @@
-import {
-  common
-} from '../common/manager'
+import Common from '../common/main.js'
 import {
   encrypt as Encrypt
-} from '../api/manager'
+} from '../api/main'
 import {
   CQAt
 } from 'cq-websocket'
@@ -11,7 +9,7 @@ import Axios from 'axios'
 
 var timer = null
 
-class liveWatch extends common {
+class liveWatch extends Common {
   constructor(bot) {
     super()
     this.bot = bot
