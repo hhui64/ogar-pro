@@ -8,26 +8,42 @@ let muteRequestQueue = []
 
 const muteRequestQueueManager = (options) => {
   MiddlewareManager.use(async (ctx, next, ...args) => {
+    /**
+     * 判断机器人是否被 @
+     */
     if (!ctx.atMe) {
       next()
       return
     }
+    /**
+     * 获取 bot 对象
+     */
     const bot = args[0]
     /**
-     * 该群的申请队列
+     * 获取该群待处理的禁言申请队列
      */
     let gruopRequest = muteRequestQueue[ctx.group_id]
+    /**
+     * 获取申请者信息
+     */
+    const userInfo = await bot('get_group_member_info', {
+      group_id: ctx.group_id,
+      user_id: ctx.sender.user_id
+    })
     /**
      * 确认申请禁言方法
      * 这一步一定要在取消申请判断之前处理
      */
     if (ctx.message.indexOf('确认申请') > -1) {
-      if (!gruopRequest) { // 队列为空则返回, 即暂时无人申请禁言
+      // 判断队列为空则返回, 即此群暂时没有待处理的禁言请求
+      if (!gruopRequest) {
         next()
         return
       }
+      // 根据发送者的 QQ 在请求队列中获取禁言请求
       let __request = gruopRequest.find(item => item.user_id === ctx.sender.user_id)
-      if (__request) { // 判断该群的申请队列中是否存在该用户的申请禁言
+      // 判断该群的申请队列中是否存在该用户的禁言请求
+      if (__request) {
         console.log('确认申请禁言成功：', __request.user_id, __request.time)
         // 从队列中删除该用户的申请, 此时已判断为逻辑正确
         muteRequestQueue[ctx.group_id].splice(gruopRequest.findIndex(item => item.user_id === ctx.sender.user_id), 1)
@@ -40,7 +56,7 @@ const muteRequestQueueManager = (options) => {
           duration: __request.time
         })
         /**
-         * 发送消息
+         * 发送确认请求的提示消息
          */
         bot('send_msg', {
           group_id: ctx.group_id,
@@ -64,7 +80,7 @@ const muteRequestQueueManager = (options) => {
         console.log('已取消申请禁言：', gruopRequest[__requestIndex].user_id, gruopRequest[__requestIndex].time)
         bot('send_msg', {
           group_id: ctx.group_id,
-          message: new CQAt(ctx.sender.user_id) + ' ' + `\n你已取消你在\n【${moment(gruopRequest[__requestIndex]._t, 'X').format('YYYY-MM-DD HH:mm:ss')}】\n提交的禁言申请！`
+          message: new CQAt(ctx.sender.user_id) + ' ' + `\n你已取消你在\n【${ moment(gruopRequest[__requestIndex]._t, 'X').format('YYYY-MM-DD HH:mm:ss') }】\n提交的禁言申请！`
         })
         muteRequestQueue[ctx.group_id].splice(__requestIndex, 1)
         return
@@ -77,13 +93,6 @@ const muteRequestQueueManager = (options) => {
     if (ctx.message.indexOf('申请禁言') > -1) {
       // let __request = muteRequestQueue[ctx.group_id].find(item => item.user_id === ctx.sender.user_id)
       // if (__request) return // 此用户存在未处理的申请
-      /**
-       * 获取申请者信息
-       */
-      const userInfo = await bot('get_group_member_info', {
-        group_id: ctx.group_id,
-        user_id: ctx.sender.user_id
-      })
       const isAdmin = userInfo.data.role !== 'member'
       if (isAdmin) { // 判断是否群主或管理员
         bot('send_msg', {
@@ -155,7 +164,7 @@ const muteRequestQueueManager = (options) => {
          */
         bot('send_msg', {
           group_id: ctx.group_id,
-          message: new CQAt(ctx.sender.user_id) + ' ' + `\n你确定要申请禁言【${time.count + __u}】吗？\n执行成功后在到期之前将无法以任何理由申请解除禁言！\n---------------------------\n确认申请：\n回复 '@OGAR 确认申请'\n---------------------------\n取消申请：\n回复 '@OGAR [任意内容]'`
+          message: new CQAt(ctx.sender.user_id) + ' ' + `\n你确定要申请禁言【${ time.count + __u }】吗？\n执行成功后在到期之前将无法以任何理由申请解除禁言！\n---------------------------\n确认申请：\n回复 '@OGAR 确认申请'\n---------------------------\n取消申请：\n回复 '@OGAR [任意内容]'`
         })
         console.log('提交申请禁言：', ctx.sender.user_id, __sec)
         /**
