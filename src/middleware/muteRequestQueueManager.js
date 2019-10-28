@@ -4,7 +4,6 @@ import {
   CQAt
 } from 'cq-websocket'
 
-
 let muteRequestQueue = []
 
 const muteRequestQueueManager = (options) => {

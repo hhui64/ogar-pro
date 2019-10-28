@@ -52,9 +52,18 @@ module.exports = {
   },
   middleware: [
     'msgQueueManager',
+    'baiduAip',
     'muteRequestQueueManager',
-    'autoReply'
+    'autoReply',
   ],
+  msgQueueManager: {
+    enable: true,
+    type: ['private', 'discuss', 'group']
+  },
+  baiduAip: {
+    enable: true,
+    type: ['discuss', 'group']
+  },
   muteRequestQueueManager: {
     enable: true,
     type: ['group']
