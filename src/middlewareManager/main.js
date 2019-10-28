@@ -6,10 +6,14 @@ export default class MiddlewareManager extends Common {
   constructor() {
     super()
     this.middlewareIndex = 0
+    this.defaultOptions = {
+      enable: false,
+      type: []
+    }
     this.config.middleware.map(thisMiddleware => {
       try {
         const thisMiddlewareFn = require('../middleware/' + thisMiddleware)[thisMiddleware]
-        thisMiddlewareFn(this.config[thisMiddleware])
+        thisMiddlewareFn(this.config[thisMiddleware] || this.defaultOptions)
         return thisMiddleware
       } catch (error) {
         console.error(error)
@@ -39,7 +43,7 @@ export default class MiddlewareManager extends Common {
     if (this.middlewareIndex >= middleware.length && this.middlewareIndex !== 0) return
     const thisMiddleware = middleware[this.middlewareIndex++]
     if (!thisMiddleware) return
-    const thisMiddlewareOptions = this.config[this.config.middleware[this.middlewareIndex - 1]]
+    const thisMiddlewareOptions = this.config[this.config.middleware[this.middlewareIndex - 1]] || this.defaultOptions
     if (!thisMiddlewareOptions || thisMiddlewareOptions.type && !thisMiddlewareOptions.type.includes(ctx.message_type)) {
       this.next(ctx, ...args)
       return
